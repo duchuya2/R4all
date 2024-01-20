@@ -1,0 +1,88 @@
+
+BÀI 3. CHUYỂN ĐỔI, XỬ LÝ VÀ PHÂN TÍCH SỐ LIỆU VỚI R.
+
+#===============================================================
+#================= ỨNG DỤNG VÀO PHÂN TÍCH ======================
+#===============================================================
+
+## CÂU HỎI PHÂN TÍCH
+# 1. Xác định 10 quốc gia có số lượng ca nhiễm/ tử vong trên 10 vạn dân nhiều nhất
+# 2. So sánh số lượng ca nhiễm/ ca tử vong trung bình giữa quốc gia có tỷ lệ tiêm chủng đầy đủ trên 60%. 
+# 3. Liệu có mối liên quan giữa tỉ lệ số lượng ca tử vong và số lượng mũi vaccine
+
+
+***TRẢ LỜI
+
+# 1. Xác định 10 quốc gia có số lượng ca nhiễm/ tử vong trên 10 vạn dân nhiều nhất
+```{r}
+
+# [ex1]
+df1 <- df %>% 
+  mutate(case_per10k = total_cv_cases/population*100000,
+         death_per10k = total_cv_death/population*100000) 
+
+# [ex3]
+top10_case <- df1 %>% 
+  select(location, total_cv_cases, case_per10k) %>%
+  arrange(-case_per10k) %>%
+  head(10)
+# [ex3]
+top10_death <- df1 %>% 
+  select(location, total_cv_cases, death_per10k) %>%
+  arrange(-death_per10k) %>%
+  head(10)  
+
+
+
+export(top10_case, here("Results","top10_covid_case[25.3.2023].xlsx"))
+export(top10_death, here("Results","top10_covid_death[25.3.2023].xlsx"))
+
+```
+
+# 2. So sánh số lượng ca nhiễm/ ca tử vong trung bình giữa quốc gia có tỷ lệ tiêm chủng đầy đủ trên 60%. 
+```{r}
+
+
+#[ex2]
+
+df2 <- df1 %>% mutate(ful_vac60 = case_when(
+  fulvax_per_100 >=60 ~ "Vaccine >= 60%",
+  fulvax_per_100 <60 ~ "Vaccine < 60%"
+))
+
+# [ex4]
+df3 <- df2 %>% 
+  filter(death_per10k <20) 
+
+# [ex5]
+case_death_vac <- df2 %>% 
+  group_by(ful_vac60) %>%
+  summarize(n= n(), 
+            avg.case = mean(total_cv_cases), 
+            avg.case.10k = mean(case_per10k),
+            avg.death = mean(total_cv_death), 
+            avg.death10k = mean(death_per10k))
+
+export(case_death_vac, here("Results","ques2[25.3.2023].xlsx"))
+```
+
+
+#3. Vẽ biểu đồ biểu thị mối liên quan giữa tỉ lệ số lượng ca tử vong và số lượng mũi vaccine
+
+```{r}
+ques3 <- df3 %>%
+  ggplot( aes(x=fulvax_per_100, y=  death_per10k )) +
+  geom_point(aes(col= case_per10k), size = 3) +
+  labs(x = "Số lượng người tiêm vacxin", 
+       y = "Số lượng ca tử vong/ 10.000 dân", 
+       col = "Số ca nhiễm/10.000 dân") 
+  
+cairo_pdf(filename = "Results/question3[25.3.2023].pdf",
+          width = 8.5, height = 6.5,
+          onefile = TRUE, family = "Arial")
+
+ques3
+
+dev.off()
+
+```

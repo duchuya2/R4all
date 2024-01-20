@@ -1,0 +1,176 @@
+BÀI 3. CHUYỂN ĐỔI PHÂN TÍCH SỐ LIỆU
+
+```{r}
+rm(list = ls()) # Xoa moi truong du lieu
+pacman::p_load(tidyverse, rio,here) # Tai package tidyverse
+```
+
+
+TAO DU LIEU VI DU 
+```{r}
+# Tao cac cot du lieu x1: gioi, x2: nam hoc(grade), y1: tuoi, y2: tri so huyet ap
+
+id <- c(1:10)
+x1 <- sample(c("M", "F"), 10, replace = TRUE)
+x2 <- sample(c("freshmen", "second", "third", "forth"), 10, replace = TRUE)
+y1 <- c(17,19,23,25,17,31,23,25,22,21)
+y2 <- rnorm(10, mean = 120, sd = 15)
+
+# Combine the vectors into a dataframe
+df <- data.frame(id,x1, x2, y1, y2)
+
+# Save du lieu
+export(df, here("Results","df_example3.rds"))
+```
+
+
+B4. XU LY & CHUYEN DOI DU LIEU
+
+```{r}
+# Nhap du lieu
+rm(list=ls())
+df<-import(here("Results","df_example3.rds" ))
+
+
+#==========EX1: tao bien moi "truong" voi gia tri la "dhy"
+df1 <- df %>% 
+  mutate(truong = "dhy")
+
+## Cach 2: 
+df1 <- df
+df1$truong <- "dhy"
+
+#==========EX2: phan nhom tuoi
+df2<- df1 %>% mutate(nhomtuoi = case_when(
+  y1 == 17 ~ "17 tuoi",
+  y1 <= 22 ~ "<=22 tuoi",
+  y1 >22 ~ ">22 tuoi"
+))
+
+
+
+#==========EX3. Xoa cot truong 
+df2 <- df2 %>% select(-truong)
+
+#==========EX4. loc cot gioi, tri so huyet ap va chi chon doi tuong nam
+df3 <- df2 %>% 
+  select(x1, y2) %>%
+  filter(x1 == "M")
+
+#==========EX5. Doi ten bien cua du lieu df thanh: 
+## x1: gioi, x2: grade, y1: tuoi, y2: huyetap
+
+## Cach 1: 
+
+df5 <- df2 %>%
+  rename("gioi" = x1, 
+         "grade" = x2,
+         "tuoi" = y1,
+         "huyetap" = y2)
+## Cach 2: 
+df5 <- df2 %>% 
+  select("gioi" = x1, 
+         "grade" = x2
+         )
+
+## Cach 3: 
+df5<- df2
+names(df5) <- c("id","gioi", "grade", "tuoi", "huyetap", "nhomtuoi")
+
+#==========EX6. Sap xep doi tuong theo tri so huyet ap giam dan.  
+
+df6 <- df5 %>%
+  arrange(-huyetap)
+
+export(df6, here("Results","df_example6.rds"))
+
+```
+
+EX7. KET HOP DU LIEU
+```{r}
+df6 <- import(here("Results","df_example6.rds"))
+
+
+#Row bind
+id <- c(11:13)
+gioi <- c("M", "F","F")
+grade <-c("freshmen", "second", "forth")
+tuoi <- c(17,19,23)
+huyetap <- c(101, 124,130)
+nhomtuoi <- c("17 tuoi", "<22 tuoi", ">22 tuoi")
+
+row_df <- data.frame(id, gioi, grade, tuoi, huyetap, nhomtuoi)
+rowbind_df  <- rbind(df6,row_df)
+
+# Cbind
+
+col_df <- data.frame(id=c(1:10),
+                     phanloai_sk = c("tot","kha","kha","tot","kha","tot","kha","kha","tot","kha"))
+colbind_df <- cbind(df6,col_df)
+
+# Merge
+df_gluco <- data.frame(
+  "id" = c(1:12),
+  "gluco" = rnorm(12, mean=100, sd=13)
+)
+
+df7 <- merge(df6, df_gluco, by.x = "id", by.y = "id")
+
+export(df7, here("Dataset","df7_example3.rds"))
+```
+
+
+
+B5. PHAN TICH MO TA
+Load the packages
+```{r}
+rm(list=ls())
+library(pacman)
+p_load(tidyverse, # xu ly so lieu va tao bang dinh tinh, dinh luong
+       janitor # tao bang so lieu crosstab
+       )
+```
+
+```{r}
+df <- import(here("Dataset","df7_example3.rds"))
+names(df)
+```
+
+
+Table 1. Dinh tinh x dinh tinh
+```{r}
+p_load(janitor)
+tb1 <- df %>% 
+  tabyl(gioi,grade) %>%
+  adorn_percentages() %>%
+  adorn_pct_formatting(digits = 1) %>%
+  adorn_ns(position = "front")
+
+```
+
+Table 2. Dinh tinh x dinh luong
+```{r}
+
+tb2 <- df %>% 
+  group_by(gioi) %>% 
+  summarize(n=n(),
+            mean = mean(tuoi),
+            sd = sd(tuoi), 
+            median = median(tuoi),
+            q1 = quantile(tuoi, probs = 0.25),
+            q3 = quantile(tuoi, probs = 0.75)
+            ) 
+
+```
+
+3. Dinh luong va dinh luong
+```{r}
+cor(df$tuoi,df$huyetap, method = "pearson") # pearson method: dung cho tuong quan giua 2 bien dinh luong co moi quan he tuyen tinh
+cor(df$tuoi,df$huyetap, method = "spearman") # spearman method: dung cho tuong quan giua 2 bien dinh tinh thu hang hoac phan phoi khong chuan. 
+cor(df$tuoi,df$huyetap, method = "kendall") # kendall method: dung cho tuong quan giua 2 bien dinh tinh thu hang hoac phan phoi khong chuan. 
+plot(df$tuoi,df$huyetap)
+```
+
+
+
+

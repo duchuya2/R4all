@@ -1,0 +1,75 @@
+
+# Bai 1 
+## VD1: 
+```{r}
+# Một số câu lệnh cơ ban
+rm(list=ls())
+k <- 5
+data <- data.frame(x = c("a", "b", "b", "a", "c"),
+                   y = c(1,2,3,2,3))
+
+data$x 
+
+library(tidyverse)
+data1 <- data %>% filter(x != "a") %>% mutate(new_column = "z")
+```
+# Assignment 1
+```{r}
+# Câu 1. Tạo một biến a có giá trị 100
+a <- 100
+
+
+# Chạy câu  lệnh sau để tạo data, sau đó trả lời các câu hỏi sau:
+my_data <- data.frame(
+  name = c("Alice", "Bob", "Charlie", "David"),    
+  age = c(25, 30, 40, 22),                       
+  gender = c("F", "M", "M", "M"),
+  score = c(80, 70, 90, 85)                       
+)
+
+# Câu 2.1. Hãy tạo một biến diem_so với dữ liệu được trích ra từ cột score trong my_data
+
+
+
+# Câu 2.2. Hãy tạo một biến gioi_tinh với dữ liệu được trích ra từ cột gender trong my_data
+
+```
+
+
+## VD2:
+```{r}
+hist(data$y)
+?hist
+```
+
+##VD3
+```{r}
+
+install.packages("pacman")
+library(pacman)
+install.packages("rio")
+library(rio)
+install.packages("here")
+library(here)
+
+p_load(tidyverse, rio, here)
+
+```
+
+##VD4
+```{r}
+data <- data.frame( ten = c("Huy","Nga","Loan","Linh","Nam"), 
+                    tuoi = c(28,18,23,29,36),
+                    chon = c(T,F,F,F,T)) # Tạo data
+
+str(data)
+```
+
+# Assignment 2
+```{r}
+#Tiến hành cài đặt và load các packages sau: lubridate, ggplot2, data.table
+
+
+```
+
+
